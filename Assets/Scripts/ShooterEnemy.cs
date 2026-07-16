@@ -22,24 +22,34 @@ public class ShooterEnemy : EnemyBase
 
     protected override void TryAttack(float distanceToPlayer)
     {
-        if (distanceToPlayer > shootRange) return;
+        if (distanceToPlayer > shootRange)
+        {
+            Debug.Log(gameObject.name + " ShooterEnemy.TryAttack(): blocked, distance " + distanceToPlayer.ToString("F2") + " > shootRange " + shootRange, this);
+            return;
+        }
         if (Time.time - lastAttackTime < attackCooldown) return;
         lastAttackTime = Time.time;
 
+        FaceCamera();
         PlayAttackFeedback();
 
-        if (bulletPool != null)
+        if (bulletPool == null)
         {
-            Transform origin = firePoint != null ? firePoint : transform;
-            Vector3 targetPoint = player.position + Vector3.up * 1.2f;
-            Vector3 dir = (targetPoint - origin.position).normalized;
-
-            GameObject bulletObj = bulletPool.Get(origin.position, Quaternion.LookRotation(dir));
-            var projectile = bulletObj.GetComponent<Projectile>();
-            if (projectile != null)
-            {
-                projectile.Init(bulletPool, damage);
-            }
+            Debug.LogWarning(gameObject.name + " ShooterEnemy.TryAttack(): bulletPool is not assigned, can't fire.", this);
+            return;
         }
+
+        Transform origin = firePoint != null ? firePoint : transform;
+        Vector3 targetPoint = playerCamera != null ? playerCamera.position : player.position + Vector3.up * 1.2f;
+        Vector3 dir = (targetPoint - origin.position).normalized;
+
+        GameObject bulletObj = bulletPool.Get(origin.position, Quaternion.LookRotation(dir));
+        var projectile = bulletObj.GetComponent<Projectile>();
+        if (projectile != null)
+        {
+            projectile.Init(bulletPool, damage);
+        }
+
+        Debug.Log(gameObject.name + " ShooterEnemy.TryAttack(): fired bullet from " + origin.position + " toward " + targetPoint + ".", this);
     }
 }

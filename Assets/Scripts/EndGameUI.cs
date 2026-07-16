@@ -10,7 +10,6 @@ public class EndGameUI : MonoBehaviour
     public TMP_Text finalScoreText;
     public TMP_Text enemiesDefeatedText;
     public TMP_Text timeSurvivedText;
-    public string gameSceneName = "GameScene";
     public string mainMenuSceneName = "MainMenu";
 
     void OnEnable()
@@ -68,7 +67,7 @@ public class EndGameUI : MonoBehaviour
 
     public void OnRestartPressed()
     {
-        StartCoroutine(LoadSceneAfterARSessionShutdown(gameSceneName));
+        StartCoroutine(LoadSceneAfterARSessionShutdown(SceneManager.GetActiveScene().name));
     }
 
     public void OnMainMenuPressed()
@@ -78,15 +77,22 @@ public class EndGameUI : MonoBehaviour
 
     // The Editor's XR Simulation camera provider doesn't always cleanly shut down when its
     // AR Session GameObject is destroyed in the same instant a new scene loads (repeated
-    // Restarts can compound this into real breakage, not just Console noise). Explicitly
-    // disabling the session and waiting a frame before actually loading the next scene gives
-    // it a chance to shut down properly first.
+    // Restarts can compound this into real breakage - a hung scene load, not just Console
+    // noise). The texture readback that goes wrong is driven by ARCameraManager, not ARSession
+    // itself, so both need to stop before the scene unloads, and one frame isn't always enough
+    // time for an in-flight GPU readback to finish or cancel - give it a few.
     IEnumerator LoadSceneAfterARSessionShutdown(string sceneName)
     {
+        var cameraManager = FindFirstObjectByType<ARCameraManager>();
+        if (cameraManager != null) cameraManager.enabled = false;
+
         var arSession = FindFirstObjectByType<ARSession>();
-        if (arSession != null)
+        if (arSession != null) arSession.enabled = false;
+
+        if (cameraManager != null || arSession != null)
         {
-            arSession.enabled = false;
+            yield return null;
+            yield return null;
             yield return null;
         }
 

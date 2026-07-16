@@ -6,8 +6,11 @@ using UnityEngine;
 // correct way to add virtual locomotion on top of AR Foundation.
 public class PlayerMovement : MonoBehaviour
 {
-    [Tooltip("The on-screen joystick (e.g. FixedJoystick from the Joystick Pack) placed on the HUD canvas.")]
-    public Joystick joystick;
+    [Tooltip("On-screen button held to walk forward.")]
+    public TouchButton forwardButton;
+
+    [Tooltip("On-screen button held to walk backward.")]
+    public TouchButton backButton;
 
     [Tooltip("The 'XR Origin (AR Rig)' transform to move. Do NOT assign the Main Camera itself.")]
     public Transform xrOrigin;
@@ -24,22 +27,19 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        if (joystick == null || xrOrigin == null) return;
+        if (xrOrigin == null) return;
         if (GameManager.Instance != null && GameManager.Instance.State != GameState.Playing) return;
 
-        float h = joystick.Horizontal;
-        float v = joystick.Vertical;
-        if (Mathf.Abs(h) < 0.01f && Mathf.Abs(v) < 0.01f) return;
+        float v = 0f;
+        if (forwardButton != null && forwardButton.IsHeld) v += 1f;
+        if (backButton != null && backButton.IsHeld) v -= 1f;
+        if (v == 0f) return;
 
         Transform facing = viewCamera != null ? viewCamera.transform : xrOrigin;
         Vector3 forward = facing.forward;
-        Vector3 right = facing.right;
         forward.y = 0f;
-        right.y = 0f;
         forward.Normalize();
-        right.Normalize();
 
-        Vector3 move = (forward * v + right * h) * moveSpeed * Time.deltaTime;
-        xrOrigin.position += move;
+        xrOrigin.position += forward * v * moveSpeed * Time.deltaTime;
     }
 }

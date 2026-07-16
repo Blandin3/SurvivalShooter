@@ -13,8 +13,8 @@ public class GameManager : MonoBehaviour
     public int Score { get; private set; }
     public int EnemiesDefeated { get; private set; }
 
-    [Tooltip("Scene that should auto-start gameplay each time it loads (including reloads via Restart), until real AR-placement-triggered StartGame() replaces this.")]
-    public string gameSceneName = "GameScene";
+    [Tooltip("The main menu scene's name. Any other scene that loads (Level_01, Level_02, ...) auto-starts gameplay, until real AR-placement-triggered StartGame() replaces this.")]
+    public string mainMenuSceneName = "MainMenu";
 
     public event Action<int> OnScoreChanged;
     public event Action<float> OnTimeChanged;
@@ -49,7 +49,17 @@ public class GameManager : MonoBehaviour
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name == gameSceneName && State != GameState.Playing)
+        if (scene.name == mainMenuSceneName)
+        {
+            if (State != GameState.MainMenu)
+            {
+                Debug.Log("GameManager.OnSceneLoaded(): '" + scene.name + "' loaded, returning to main menu.", this);
+                ReturnToMainMenu();
+            }
+            return;
+        }
+
+        if (State != GameState.Playing)
         {
             Debug.Log("GameManager.OnSceneLoaded(): '" + scene.name + "' loaded, starting game.", this);
             StartGame();

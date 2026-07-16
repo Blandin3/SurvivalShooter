@@ -19,10 +19,15 @@ public abstract class EnemyBase : MonoBehaviour
     public string attackTrigger = "Attack";
     public AudioClip attackSound;
 
+    [Tooltip("Corrects for models whose mesh doesn't face the same way as their Transform's forward axis (common with raw/unprocessed FBX exports). 0 = no correction. If the model faces sideways or backwards relative to its movement/target, adjust this in 90-degree steps while in Play mode until it looks right.")]
+    public float visualYawOffset = 0f;
+
     protected Transform player;
     protected PlayerHealth playerHealth;
+    protected Transform playerCamera;
     protected AudioSource audioSource;
     protected float lastAttackTime;
+    float nextDebugLogTime;
 
     protected bool HasAnimatorController => animator != null && animator.runtimeAnimatorController != null;
 
@@ -60,6 +65,8 @@ public abstract class EnemyBase : MonoBehaviour
         {
             Debug.LogWarning(GetType().Name + ": no GameObject tagged 'Player' found in the scene.", this);
         }
+
+        playerCamera = Camera.main != null ? Camera.main.transform : null;
     }
 
     protected virtual void Update()
@@ -69,6 +76,18 @@ public abstract class EnemyBase : MonoBehaviour
         Vector3 toPlayer = player.position - transform.position;
         toPlayer.y = 0f;
         float distance = toPlayer.magnitude;
+
+        // Face toward the camera (where the player is actually looking from) rather than the
+        // "player" transform, which is often a hand/weapon prop sitting at an odd offset from
+        // the camera - facing player.position can make the enemy visibly look past the player.
+        Vector3 toFaceTarget = playerCamera != null ? playerCamera.position - transform.position : toPlayer;
+        toFaceTarget.y = 0f;
+
+        if (Time.time >= nextDebugLogTime)
+        {
+            nextDebugLogTime = Time.time + 1.5f;
+            Debug.Log(gameObject.name + " (" + GetType().Name + "): distance=" + distance.ToString("F2") + " detectionRange=" + detectionRange + " engageRange=" + EngageRange + " retreatRange=" + RetreatRange, this);
+        }
 
         if (distance > detectionRange)
         {
@@ -80,20 +99,20 @@ public abstract class EnemyBase : MonoBehaviour
         {
             Vector3 dir = toPlayer.normalized;
             transform.position += dir * moveSpeed * Time.deltaTime;
-            transform.rotation = Quaternion.LookRotation(dir);
+            transform.rotation = Quaternion.LookRotation(dir) * Quaternion.Euler(0f, visualYawOffset, 0f);
             SetSpeedAnim(moveSpeed);
         }
         else if (RetreatRange > 0f && distance < RetreatRange)
         {
             Vector3 dir = toPlayer.normalized;
             transform.position -= dir * moveSpeed * Time.deltaTime;
-            FacePlayer(toPlayer);
+            FacePlayer(toFaceTarget);
             SetSpeedAnim(moveSpeed);
             TryAttack(distance);
         }
         else
         {
-            FacePlayer(toPlayer);
+            FacePlayer(toFaceTarget);
             SetSpeedAnim(0f);
             TryAttack(distance);
         }
@@ -110,8 +129,23 @@ public abstract class EnemyBase : MonoBehaviour
     protected void FacePlayer(Vector3 toPlayer)
     {
         if (toPlayer.sqrMagnitude < 0.0001f) return;
-        Quaternion lookRotation = Quaternion.LookRotation(toPlayer.normalized);
+        Quaternion lookRotation = Quaternion.LookRotation(toPlayer.normalized) * Quaternion.Euler(0f, visualYawOffset, 0f);
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, 10f * Time.deltaTime);
+    }
+
+    // Snaps to face the camera rather than the abstract "player" transform - used right
+    // before firing, since the player transform (e.g. a hand/weapon prop) can sit at an
+    // odd offset from the camera, while the camera is where the player actually is looking
+    // from and where a shot should visibly be aimed toward.
+    protected void FaceCamera()
+    {
+        if (playerCamera == null) return;
+
+        Vector3 toCamera = playerCamera.position - transform.position;
+        toCamera.y = 0f;
+        if (toCamera.sqrMagnitude < 0.0001f) return;
+
+        transform.rotation = Quaternion.LookRotation(toCamera.normalized) * Quaternion.Euler(0f, visualYawOffset, 0f);
     }
 
     protected void PlayAttackFeedback()
