@@ -57,7 +57,7 @@ public class PlayerShoot : MonoBehaviour
         // muzzle toward that exact point - otherwise a muzzle offset from the camera makes the bullet
         // travel parallel to the aim direction instead of converging on what you're looking at.
         Ray aimRay = new Ray(shootCamera.transform.position, shootCamera.transform.forward);
-        Vector3 aimPoint = Physics.Raycast(aimRay, out RaycastHit hit, aimRange)
+        Vector3 aimPoint = Physics.Raycast(aimRay, out RaycastHit hit, aimRange, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)
             ? hit.point
             : aimRay.GetPoint(aimRange);
 
