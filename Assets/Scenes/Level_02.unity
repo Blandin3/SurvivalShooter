@@ -439,6 +439,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   matchDuration: 120
   mainMenuSceneName: MainMenu
+  inGameMusic: {fileID: 8300000, guid: fb1bae38399f65b49afbec6f762e733b, type: 3}
+  inGameMusicVolume: 0.25
 --- !u!4 &89130601
 Transform:
   m_ObjectHideFlags: 0
@@ -1914,7 +1916,7 @@ MonoBehaviour:
   animator: {fileID: 591524461}
   speedParam: Speed
   attackTrigger: Attack
-  attackSound: {fileID: 0}
+  attackSound: {fileID: 8300000, guid: 18fa2463d716a22469b35491a18368c9, type: 3}
   visualYawOffset: 0
   attackRange: 1.8
   attackOrderIndex: -1
@@ -2900,7 +2902,7 @@ MonoBehaviour:
   animator: {fileID: 994628429}
   speedParam: Speed
   attackTrigger: Attack
-  attackSound: {fileID: 0}
+  attackSound: {fileID: 8300000, guid: f0c5142a4329c1343ad45de12d553561, type: 3}
   visualYawOffset: 0
   stopDistance: 8
   shootRange: 15
@@ -4871,7 +4873,7 @@ MonoBehaviour:
   animator: {fileID: 1499893835}
   speedParam: Speed
   attackTrigger: Attack
-  attackSound: {fileID: 0}
+  attackSound: {fileID: 8300000, guid: 18fa2463d716a22469b35491a18368c9, type: 3}
   visualYawOffset: 0
   attackRange: 1.8
   attackOrderIndex: -1
@@ -6441,6 +6443,7 @@ MonoBehaviour:
   enemiesDefeatedText: {fileID: 636456300}
   timeSurvivedText: {fileID: 2079133582}
   mainMenuSceneName: MainMenu
+  endGameSound: {fileID: 8300000, guid: 560cd90a01d7d4040bfc37a476b2a7a3, type: 3}
 --- !u!224 &1974205680
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6767,7 +6770,7 @@ MonoBehaviour:
   animator: {fileID: 2019015040}
   speedParam: Speed
   attackTrigger: Attack
-  attackSound: {fileID: 0}
+  attackSound: {fileID: 8300000, guid: 18fa2463d716a22469b35491a18368c9, type: 3}
   visualYawOffset: 0
   attackRange: 1.8
   attackOrderIndex: -1
