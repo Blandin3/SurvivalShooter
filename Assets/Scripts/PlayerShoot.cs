@@ -15,6 +15,7 @@ public class PlayerShoot : MonoBehaviour
     {
         if (shootCamera == null) shootCamera = Camera.main;
         audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
     }
 
     void Update()
