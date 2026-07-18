@@ -16,10 +16,17 @@ public class GameManager : MonoBehaviour
     [Tooltip("The main menu scene's name. Any other scene that loads (Level_01, Level_02, ...) auto-starts gameplay, until real AR-placement-triggered StartGame() replaces this.")]
     public string mainMenuSceneName = "MainMenu";
 
+    [Header("Music")]
+    [Tooltip("Looping background music played at a low volume while the match is in progress.")]
+    public AudioClip inGameMusic;
+    [Range(0f, 1f)] public float inGameMusicVolume = 0.25f;
+
     public event Action<int> OnScoreChanged;
     public event Action<float> OnTimeChanged;
     public event Action OnGameStarted;
     public event Action OnGameEnded;
+
+    AudioSource musicSource;
 
     void Awake()
     {
@@ -32,6 +39,13 @@ public class GameManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        musicSource = GetComponent<AudioSource>();
+        if (musicSource == null) musicSource = gameObject.AddComponent<AudioSource>();
+        musicSource.loop = true;
+        musicSource.playOnAwake = false;
+        musicSource.spatialBlend = 0f; // background music should play at full volume regardless of listener distance
+
         Debug.Log("GameManager.Awake(): Instance set, initial State is " + State, this);
 
         // GameManager persists across scene reloads (DontDestroyOnLoad), so Start() on a
@@ -93,6 +107,13 @@ public class GameManager : MonoBehaviour
         TimeRemaining = matchDuration;
         State = GameState.Playing;
 
+        if (musicSource != null && inGameMusic != null)
+        {
+            musicSource.clip = inGameMusic;
+            musicSource.volume = inGameMusicVolume;
+            musicSource.Play();
+        }
+
         Debug.Log("GameManager.StartGame(): State is now Playing. OnGameStarted has " + (OnGameStarted?.GetInvocationList().Length ?? 0) + " listener(s).", this);
 
         OnGameStarted?.Invoke();
@@ -132,5 +153,7 @@ public class GameManager : MonoBehaviour
     public void ReturnToMainMenu()
     {
         State = GameState.MainMenu;
+
+        if (musicSource != null) musicSource.Stop();
     }
 }
