@@ -41,6 +41,7 @@ public abstract class EnemyBase : MonoBehaviour
     protected virtual void Awake()
     {
         audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
     }
 
