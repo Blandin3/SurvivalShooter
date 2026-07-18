@@ -78,4 +78,13 @@ public class MainMenuUI : MonoBehaviour
     {
         DifficultySettings.Current = Difficulty.Hard;
     }
+
+    public void OnQuitPressed()
+    {
+        Application.Quit();
+
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
+    }
 }
