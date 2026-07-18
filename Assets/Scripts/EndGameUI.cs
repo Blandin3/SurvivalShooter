@@ -11,6 +11,15 @@ public class EndGameUI : MonoBehaviour
     public TMP_Text enemiesDefeatedText;
     public TMP_Text timeSurvivedText;
     public string mainMenuSceneName = "MainMenu";
+    public AudioClip endGameSound;
+
+    AudioSource audioSource;
+
+    void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+    }
 
     void OnEnable()
     {
@@ -56,6 +65,8 @@ public class EndGameUI : MonoBehaviour
         Debug.Log("EndGameUI.ShowSummary(): showing End Game panel (panel field is " + (panel != null ? panel.name : "NULL") + ").", this);
 
         if (panel != null) panel.SetActive(true);
+
+        if (audioSource != null && endGameSound != null) audioSource.PlayOneShot(endGameSound);
 
         var gm = GameManager.Instance;
         if (gm == null) return;
