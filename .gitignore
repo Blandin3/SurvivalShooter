@@ -76,3 +76,7 @@ crashlytics-build.properties
 Directory.Build.props
 UpgradeLog.htm
 .vsconfig
+
+# Native build cache / Editor crash-recovery snapshots
+/.utmp/
+/[Aa]ssets/_Recovery/
