@@ -16,6 +16,30 @@ public class PlayerShoot : MonoBehaviour
         if (shootCamera == null) shootCamera = Camera.main;
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+
+        // Fire from the gun model's actual barrel node instead of a hand-placed guess -
+        // BUTTSTOCK_BARREL is a named bone/node inside the FP_ScarH model hierarchy.
+        if (muzzle == null)
+        {
+            muzzle = FindDeepChild(transform, "BUTTSTOCK_BARREL");
+            if (muzzle == null)
+            {
+                Debug.LogWarning("PlayerShoot.Awake(): no child named 'BUTTSTOCK_BARREL' found under '" + gameObject.name + "', falling back to the camera as the fire origin.", this);
+            }
+        }
+    }
+
+    static Transform FindDeepChild(Transform parent, string name)
+    {
+        foreach (Transform child in parent)
+        {
+            if (child.name == name) return child;
+
+            Transform found = FindDeepChild(child, name);
+            if (found != null) return found;
+        }
+
+        return null;
     }
 
     void Update()
@@ -62,6 +86,16 @@ public class PlayerShoot : MonoBehaviour
             : aimRay.GetPoint(aimRange);
 
         Vector3 direction = (aimPoint - origin.position).normalized;
+
+        // If the muzzle sits far enough forward of the camera that the aim point ends up
+        // behind it (e.g. a close target), converging toward that point would aim the bullet
+        // backward instead of where the player is actually looking - fall back to the camera's
+        // forward direction instead of ever firing behind the player.
+        if (Vector3.Dot(direction, shootCamera.transform.forward) < 0f)
+        {
+            direction = shootCamera.transform.forward;
+        }
+
         GameObject bulletObj = bulletPool.Get(origin.position, Quaternion.LookRotation(direction));
 
         var projectile = bulletObj.GetComponent<Projectile>();
