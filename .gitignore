@@ -80,3 +80,4 @@ UpgradeLog.htm
 # Native build cache / Editor crash-recovery snapshots
 /.utmp/
 /[Aa]ssets/_Recovery/
+/[Aa]ssets/_Recovery.meta
